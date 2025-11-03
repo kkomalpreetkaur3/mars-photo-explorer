@@ -46,3 +46,9 @@ function displayResults(data) {
     resultsDiv.innerHTML = tableHTML;
 }
 
+searchBtn.addEventListener("click", () => {
+    const treeName = document.getElementById("treeName").value.trim();
+    if (treeName) fetchTrees(treeName);
+    else resultsDiv.innerHTML = "<p>Please enter a tree name to search.</p>";
+});
+
