@@ -1,9 +1,13 @@
 const searchBtn = document.getElementById("searchBtn");
+const treeInput = document.getElementById("treeName");
 const resultsDiv = document.getElementById("results");
 
+// Async function to fetch trees
 async function fetchTrees(commonName) {
-    const apiUrl = `https://data.winnipeg.ca/resource/d3jk-hb6j.json?$where=lower(common_name) LIKE lower('%25${commonName}%25')&$order=diameter_at_breast_height DESC&$limit=100`;
+    const apiUrl = `https://data.winnipeg.ca/resource/d3jk-hb6j.json?$where=lower(common_name) LIKE lower('%${commonName}%')&$order=diameter_at_breast_height DESC&$limit=100`;
     const encodedUrl = encodeURI(apiUrl);
+
+    resultsDiv.innerHTML = "<p>Loading results...</p>"; // Loading state
 
     try {
         const response = await fetch(encodedUrl);
@@ -16,6 +20,7 @@ async function fetchTrees(commonName) {
     }
 }
 
+// Function to display results in table
 function displayResults(data) {
     if (data.length === 0) {
         resultsDiv.innerHTML = "<p>No trees found for this search.</p>";
@@ -24,11 +29,11 @@ function displayResults(data) {
 
     let tableHTML = `<table>
                         <tr>
-                            <th>Common Name</th>
-                            <th>Scientific Name</th>
-                            <th>Diameter (cm)</th>
-                            <th>Height (m)</th>
-                            <th>Address</th>
+                            <th scope="col">Common Name</th>
+                            <th scope="col">Scientific Name</th>
+                            <th scope="col">Diameter (cm)</th>
+                            <th scope="col">Height (m)</th>
+                            <th scope="col">Address</th>
                         </tr>`;
 
     data.forEach(tree => {
@@ -36,8 +41,8 @@ function displayResults(data) {
         tableHTML += `<tr>
                         <td>${common_name || "N/A"}</td>
                         <td>${scientific_name || "N/A"}</td>
-                        <td>${diameter_at_breast_height || "N/A"}</td>
-                        <td>${height || "N/A"}</td>
+                        <td>${diameter_at_breast_height ? parseFloat(diameter_at_breast_height).toFixed(1) : "N/A"}</td>
+                        <td>${height ? parseFloat(height).toFixed(1) : "N/A"}</td>
                         <td>${address || "N/A"}</td>
                       </tr>`;
     });
@@ -46,9 +51,17 @@ function displayResults(data) {
     resultsDiv.innerHTML = tableHTML;
 }
 
-searchBtn.addEventListener("click", () => {
-    const treeName = document.getElementById("treeName").value.trim();
+// Function to handle search
+function handleSearch() {
+    const treeName = treeInput.value.trim();
     if (treeName) fetchTrees(treeName);
     else resultsDiv.innerHTML = "<p>Please enter a tree name to search.</p>";
-});
+}
 
+// Event listeners
+searchBtn.addEventListener("click", handleSearch);
+
+// Allow Enter key to trigger search
+treeInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleSearch();
+});
